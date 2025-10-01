@@ -1,0 +1,306 @@
+/*
+* This file is part of MPSolve 3.2.2
+*
+* Copyright (C) 2001-2020, Dipartimento di Matematica "L. Tonelli", Pisa.
+* License: http://www.gnu.org/licenses/gpl.html GPL version 3 or higher
+*
+* Authors:
+*   Dario Andrea Bini <bini@dm.unipi.it>
+*   Giuseppe Fiorentino <fiorent@dm.unipi.it>
+*   Leonardo Robol <leonardo.robol@unipi.it>
+*/
+
+
+#include <float.h>
+#include <math.h>
+#include <mps/mps.h>
+
+/**
+* @brief Check if the i-th and the j-th discs are newton-isolated.
+*
+* More precisely, given a parameter <code>n</code>, check if
+* the roots <code>i</code> and <code>j</code> are separated
+* with circles whose radius is less than their distance divided
+* for <code>n</code>.
+*
+* If \f$n = 1\f$ this condition correspond to isolation,
+* if \f$n = 2*m\f$ where \f$m\f$ is the degree of the polynomial
+* then it correspond to newton isolation.
+*
+* @param ctx mps_context struct.
+* @param n See above.
+* @param i the first root.
+* @param j the second root.
+* @param frad The inclusion radii precomputed by some other routines.
+* @return false if the disc <code>i</code> and <code>j</code>
+*   are newton-isolated.
+*/
+MPS_PRIVATE mps_boolean
+    mps_ftouchnwt(mps_context* ctx, double* frad, int n, int i, int j)
+{
+    cplx_t ctmp;
+    double t;
+
+    t = DBL_MAX / (2 * n);        /*#G added 27/4/98 */
+    if (frad[i] >= t || frad[j] >= t)
+        return true;
+
+    cplx_sub(ctmp, ctx->approx_root[i]->fvalue, ctx->approx_root[j]->fvalue);
+
+    return n * (frad[i] + frad[j]) >= cplx_mod(ctmp);
+}
+
+/**
+* @brief Check if the i-th and the j-th discs are newton-isolated.
+*
+* More precisely, given a parameter <code>n</code>, check if
+* the roots <code>i</code> and <code>j</code> are separated
+* with circles whose radius is less than their distance divided
+* for <code>n</code>.
+*
+* If \f$n = 1\f$ this condition correspond to isolation,
+* if \f$n = 2*m\f$ where \f$m\f$ is the degree of the polynomial
+* then it correspond to newton isolation.
+*
+* @param ctx mps_context struct.
+* @param drad The inclusion radii that should be used to perform
+* cluster analysis.
+* @param n See above.
+* @param i the first root.
+* @param j the second root.
+* @return false if the disc <code>i</code> and <code>j</code>
+*   are newton-isolated.
+*/
+MPS_PRIVATE mps_boolean
+    mps_dtouchnwt(mps_context* ctx, rdpe_t* drad, int n, int i, int j)
+{
+    cdpe_t ctmp;
+    rdpe_t dtmp1, dtmp2;
+
+    rdpe_add(dtmp1, drad[i], drad[j]);
+
+    rdpe_mul_eq_d(dtmp1, (double)n);
+    cdpe_sub(ctmp, ctx->approx_root[i]->dvalue, ctx->approx_root[j]->dvalue);
+    cdpe_mod(dtmp2, ctmp);
+    return rdpe_ge(dtmp1, dtmp2);
+}
+
+/**
+* @brief Check if the i-th and the j-th discs are newton-isolated.
+*
+* More precisely, given a parameter <code>n</code>, check if
+* the roots <code>i</code> and <code>j</code> are separated
+* with circles whose radius is less than their distance divided
+* for <code>n</code>.
+*
+* If \f$n = 1\f$ this condition correspond to isolation,
+* if \f$n = 2*m\f$ where \f$m\f$ is the degree of the polynomial
+* then it correspond to newton isolation.
+*
+* @param ctx mps_context struct.
+* @param drad The inclusion radii that should be used to perform
+* cluster analysis.
+* @param n See above.
+* @param i the first root.
+* @param j the second root.
+* @return false if the disc <code>i</code> and <code>j</code>
+*   are newton-isolated.
+*/
+MPS_PRIVATE mps_boolean
+    mps_mtouchnwt(mps_context* ctx, rdpe_t* drad, int n, int i, int j)
+{
+    mpc_t mtmp;
+    cdpe_t ctmp;
+    rdpe_t dtmp1, dtmp2;
+
+    mpc_init2(mtmp, ctx->mpwp);
+
+    rdpe_add(dtmp1, drad[i], drad[j]);
+
+    /* if (rdpe_Esp (dtmp1) < rdpe_Esp (ctx->approx_root[i]->drad) || */
+    /*     rdpe_Esp (dtmp1) < rdpe_Esp (ctx->approx_root[j]->drad)) */
+    /*     return true; */
+
+    rdpe_mul_eq_d(dtmp1, (double)n);
+    mpc_sub(mtmp, ctx->approx_root[i]->mvalue, ctx->approx_root[j]->mvalue);
+    mpc_get_cdpe(ctmp, mtmp);
+    cdpe_mod(dtmp2, ctmp);
+
+    mpc_clear(mtmp);
+
+    return rdpe_ge(dtmp1, dtmp2);
+}
+
+/**
+* @brief Return true if the disk intersects the real axis, false otherwise (floating point version).
+*
+* @param ctx A pointer to the current mps_context.
+* @param n The degree of the polynomial.
+* @param i The index of the root to check
+*/
+MPS_PRIVATE mps_boolean
+    mps_ftouchreal(mps_context* ctx, int n, int i)
+{
+    if (ctx->approx_root[i]->frad >= DBL_MAX / n)
+        return true;
+
+    return n * ctx->approx_root[i]->frad >= fabs(cplx_Im(ctx->approx_root[i]->fvalue));
+}
+
+/**
+* @brief Return true if the disk intersects the real axis, false otherwise (DPE version).
+*
+* @param ctx A pointer to the current mps_context.
+* @param n The degree of the polynomial.
+* @param i The index of the root to check
+*/
+MPS_PRIVATE mps_boolean
+    mps_dtouchreal(mps_context* ctx, int n, int i)
+{
+    rdpe_t tmp1, tmp2;
+
+    rdpe_mul_d(tmp1, ctx->approx_root[i]->drad, (double)n);
+    rdpe_abs(tmp2, cdpe_Im(ctx->approx_root[i]->dvalue));
+    return rdpe_ge(tmp1, tmp2);
+}
+
+/**
+* @brief Return true if the disk intersects the real axis, false otherwise (MP version).
+*
+* @param ctx A pointer to the current mps_context.
+* @param n The degree of the polynomial.
+* @param i The index of the root to check
+*/
+MPS_PRIVATE mps_boolean
+    mps_mtouchreal(mps_context* ctx, int n, int i)
+{
+    rdpe_t tmp1, tmp2;
+
+    rdpe_mul_d(tmp1, ctx->approx_root[i]->drad, (double)n);
+    mpf_get_rdpe(tmp2, mpc_Im(ctx->approx_root[i]->mvalue));
+    rdpe_abs_eq(tmp2);
+
+    return rdpe_ge(tmp1, tmp2);
+}
+
+/**
+* @brief Return true if the disk intersects the imaginary axis, false otherwise (floating point version).
+*
+* @param ctx A pointer to the current mps_context.
+* @param n The degree of the polynomial.
+* @param i The index of the root to check
+*/
+MPS_PRIVATE mps_boolean
+    mps_ftouchimag(mps_context* ctx, int n, int i)
+{
+    if (ctx->approx_root[i]->frad >= DBL_MAX / n)
+        return true;
+
+    return n * ctx->approx_root[i]->frad >= fabs(cplx_Re(ctx->approx_root[i]->fvalue));
+}
+
+/**
+* @brief Return true if the disk intersects the imaginary axis, false otherwise (DPE version).
+*
+* @param ctx A pointer to the current mps_context.
+* @param n The degree of the polynomial.
+* @param i The index of the root to check
+*/
+MPS_PRIVATE mps_boolean
+    mps_dtouchimag(mps_context* ctx, int n, int i)
+{
+    rdpe_t tmp1, tmp2;
+
+    rdpe_mul_d(tmp1, ctx->approx_root[i]->drad, (double)n);
+    rdpe_abs(tmp2, cdpe_Re(ctx->approx_root[i]->dvalue));
+    return rdpe_ge(tmp1, tmp2);
+}
+
+/**
+* @brief Return true if the disk intersects the imaginary axis, false otherwise (MP version).
+*
+* @param ctx A pointer to the current mps_context.
+* @param n The degree of the polynomial.
+* @param i The index of the root to check
+*/
+MPS_PRIVATE mps_boolean
+    mps_mtouchimag(mps_context* ctx, int n, int i)
+{
+    rdpe_t tmp1, tmp2;
+
+    rdpe_mul_d(tmp1, ctx->approx_root[i]->drad, (double)n);
+    mpf_get_rdpe(tmp2, mpc_Re(ctx->approx_root[i]->mvalue));
+    rdpe_abs_eq(tmp2);
+
+    return rdpe_ge(tmp1, tmp2);
+}
+
+/**
+* @brief Return true if the disk intersects the unitary circle, false otherwise (floating point version).
+*
+* @param ctx A pointer to the current mps_context.
+* @param n The degree of the polynomial.
+* @param i The index of the root to check
+*/
+MPS_PRIVATE mps_boolean
+    mps_ftouchunit(mps_context* ctx, int n, int i)
+{
+    double ab, rad;
+
+    if (ctx->approx_root[i]->frad >= DBL_MAX / n)
+        return true;
+
+    rad = n * ctx->approx_root[i]->frad;
+    ab = cplx_mod(ctx->approx_root[i]->fvalue);
+    return (rad + 1 >= ab) && (rad + ab >= 1);
+}
+
+/**
+* @brief Return true if the disk intersects the unitary circle, false otherwise (DPE version).
+*
+* @param ctx A pointer to the current mps_context.
+* @param n The degree of the polynomial.
+* @param i The index of the root to check
+*/
+MPS_PRIVATE mps_boolean
+    mps_dtouchunit(mps_context* ctx, int n, int i)
+{
+    rdpe_t ab, rad, tmp;
+
+    cdpe_mod(ab, ctx->approx_root[i]->dvalue);
+    rdpe_mul_d(rad, ctx->approx_root[i]->drad, (double)n);
+    rdpe_add_d(tmp, rad, 1.0);
+    if (rdpe_lt(tmp, ab))
+        return false;
+    rdpe_add(tmp, rad, ab);
+    return rdpe_ge(tmp, rdpe_one);
+}
+
+/**
+* @brief Return true if the disk intersects the unitary circle, false otherwise (MP version).
+*
+* @param ctx A pointer to the current mps_context.
+* @param n The degree of the polynomial.
+* @param i The index of the root to check
+*/
+MPS_PRIVATE mps_boolean
+    mps_mtouchunit(mps_context* ctx, int n, int i)
+{
+    mpf_t mab;
+    rdpe_t ab, rad;
+
+    mpf_init2(mab, ctx->mpwp);
+
+    mpc_mod(mab, ctx->approx_root[i]->mvalue);
+    mpf_sub_eq_ui(mab, 1);
+    mpf_get_rdpe(ab, mab);
+
+    mpf_clear(mab);
+
+    rdpe_mul_d(rad, ctx->approx_root[i]->drad, (double)n);
+
+    if (rdpe_lt(rad, ab))
+        return false;
+    rdpe_neg_eq(ab);
+    return rdpe_gt(rad, ab);
+}
