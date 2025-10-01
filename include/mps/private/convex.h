@@ -1,0 +1,75 @@
+/*
+* This file is part of MPSolve 3.2.2
+*
+* Copyright (C) 2001-2020, Dipartimento di Matematica "L. Tonelli", Pisa.
+* License: http://www.gnu.org/licenses/gpl.html GPL version 3 or higher
+*
+* Authors:
+*   Leonardo Robol <leonardo.robol@unipi.it>
+*/
+
+/**
+* @file
+*
+* @brief Implementation of the convex hull computation.
+*/
+
+#ifndef MPS_CONVEX_H_
+#define MPS_CONVEX_H_
+
+#include <mps/mps.h>
+
+/**
+* @brief Generic vertex of a linear hypograph.
+*/
+struct mps_vertex {
+	/**
+	* @brief The x coordinate of the vertex.
+	*/
+	int x;
+
+	/**
+	* @brief The y coordinate of the vertex.
+	*/
+	double y;
+
+	/**
+	* @brief A pointer to the next vertex in the hypograph, or
+	* NULL if this is the last vertex or a detached one.
+	*/
+	mps_vertex* next_vertex;
+
+	/**
+	* @brief A pointer to the previous vertex in the hypograph,
+	* or NULL if this is the first vertex or a detached one.
+	*/
+	mps_vertex* previous_vertex;
+};
+
+typedef struct mps_vertex mps_vertex;
+
+/**
+* @brief A set described as hypograph of a piecewise linear function.
+*
+* The explicit description of the set is given by a set of vertexes of the
+* type \f$(i, y_i)\f$ where \f$i\f$ is a positive integer.
+*/
+struct mps_linear_hypograph {
+	int n;
+
+	mps_vertex* last_vertex;
+
+	mps_vertex* first_vertex;
+};
+
+typedef struct mps_linear_hypograph mps_linear_hypograph;
+
+mps_linear_hypograph* mps_convex_hull(mps_context* ctx, mps_linear_hypograph* l);
+
+int* mps_fconvex(mps_context* ctx, int n, double a[]);
+
+mps_linear_hypograph* mps_linear_hypograph_new(mps_context* ctx);
+
+void mps_linear_hypograph_free(mps_context* ctx, mps_linear_hypograph* l);
+
+#endif /* endif MPS_CONVEX_H_ */
