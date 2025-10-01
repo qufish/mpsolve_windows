@@ -1,0 +1,233 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Template|Win32">
+      <Configuration>Template</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Template|x64">
+      <Configuration>Template</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Template'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)'=='Release'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="mpsolve_windows.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros">
+    <OutDir>$(mpsolve_exec)$(Configuration)\</OutDir>
+    <TargetPath>$(OutDir)$(TargetName)$(TargetExt)</TargetPath>
+  </PropertyGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{D4077F8F-4982-93CB-82F3-F98282FE16AA}</ProjectGuid>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <Midl>
+      <TypeLibraryName>.\$(Configuration)\$(TargetName).tlb</TypeLibraryName>
+    </Midl>
+    <Bscmake>
+      <OutputFile>.\$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(mpsolve_mpfr_lib);$(mpsolve_mpir_lib);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">mpfr.lib;mpir.lib;ucrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Release'">mpfr.lib;mpir.lib;ucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>$(mpsolve_exec)$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
+      <ProfileGuidedDatabase Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)$(TargetName).pgd</ProfileGuidedDatabase>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">/NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:MSVCRTD.LIB %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">/NODEFAULTLIB:LIBCMT %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/NODEFAULTLIB:LIBCMTD /NODEFAULTLIB:MSVCRTD.LIB %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/NODEFAULTLIB:LIBCMT %(AdditionalOptions)</AdditionalOptions>
+    </Link>
+    <ClCompile>
+      <LanguageStandard Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">stdcpp17</LanguageStandard>
+    </ClCompile>
+    <ClCompile>
+      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MinimalRebuild>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(mpsolve_include);$(mpsolve_root)include\mps;C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.42.34433\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <ClCompile>
+	  <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(mpsolve_include);$(mpsolve_root)include\mps;C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.42.34433\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+	</ClCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Label="Configuration">
+    <ClCompile>
+      <PreprocessorDefinitions>_CONSOLE;__WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <BuildMacro Include="TargetPath">
+      <Value>$(TargetPath)</Value>
+    </BuildMacro>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\libmps\chebyshev\chebyshev-evaluation.cpp" />
+    <ClCompile Include="src\libmps\chebyshev\chebyshev-parser.cpp" />
+    <ClCompile Include="src\libmps\chebyshev\chebyshev.cpp" />
+    <ClCompile Include="src\libmps\common\aberth.cpp" />
+    <ClCompile Include="src\libmps\common\approximation.cpp" />
+    <ClCompile Include="src\libmps\common\cluster-analysis.cpp" />
+    <ClCompile Include="src\libmps\common\cluster.cpp" />
+    <ClCompile Include="src\libmps\common\context.cpp" />
+    <ClCompile Include="src\libmps\common\convex.cpp" />
+    <ClCompile Include="src\libmps\common\defaults.cpp" />
+    <ClCompile Include="src\libmps\common\file-starting.cpp" />
+    <ClCompile Include="src\libmps\common\improve.cpp" />
+    <ClCompile Include="src\libmps\common\inclusion.cpp" />
+    <ClCompile Include="src\libmps\common\inline-poly-parser.cpp" />
+    <ClCompile Include="src\libmps\common\interface.cpp" />
+    <ClCompile Include="src\libmps\common\jacobi-aberth.cpp" />
+    <ClCompile Include="src\libmps\common\list-element.cpp" />
+    <ClCompile Include="src\libmps\common\list.cpp" />
+    <ClCompile Include="src\libmps\common\modify.cpp" />
+    <ClCompile Include="src\libmps\common\nroots-polynomial.cpp" />
+    <ClCompile Include="src\libmps\common\parser.cpp" />
+    <ClCompile Include="src\libmps\common\polynomial.cpp" />
+    <ClCompile Include="src\libmps\common\polynomialxx.cpp" />
+    <ClCompile Include="src\libmps\common\recursive-starting.cpp" />
+    <ClCompile Include="src\libmps\common\sort.cpp" />
+    <ClCompile Include="src\libmps\common\starting-configuration.cpp" />
+    <ClCompile Include="src\libmps\common\starting.cpp" />
+    <ClCompile Include="src\libmps\common\strndup.cpp" />
+    <ClCompile Include="src\libmps\common\test.cpp" />
+    <ClCompile Include="src\libmps\common\tools.cpp" />
+    <ClCompile Include="src\libmps\common\touch.cpp" />
+    <ClCompile Include="src\libmps\common\user.cpp" />
+    <ClCompile Include="src\libmps\common\utils.cpp" />
+    <ClCompile Include="src\libmps\common\validation.cpp" />
+    <ClCompile Include="src\libmps\common\version.cpp" />
+    <ClCompile Include="src\libmps\extra.cpp" />
+    <ClCompile Include="src\libmps\floating-point\gmptools.cpp" />
+    <ClCompile Include="src\libmps\floating-point\link.cpp" />
+    <ClCompile Include="src\libmps\floating-point\mpc.cpp" />
+    <ClCompile Include="src\libmps\floating-point\mt.cpp" />
+    <ClCompile Include="src\libmps\formal\formal-monomial.cpp" />
+    <ClCompile Include="src\libmps\formal\formal-polynomial.cpp" />
+    <ClCompile Include="src\libmps\general\general-radius.cpp" />
+    <ClCompile Include="src\libmps\general\general-starting.cpp" />
+    <ClCompile Include="src\libmps\matrix\hessenberg-determinant.cpp" />
+    <ClCompile Include="src\libmps\monomial\horner.cpp" />
+    <ClCompile Include="src\libmps\monomial\monomial-matrix-poly.cpp" />
+    <ClCompile Include="src\libmps\monomial\monomial-parser.cpp" />
+    <ClCompile Include="src\libmps\monomial\monomial-poly.cpp" />
+    <ClCompile Include="src\libmps\monomial\monomial-threading.cpp" />
+    <ClCompile Include="src\libmps\monomial\newton.cpp" />
+    <ClCompile Include="src\libmps\monomial\shift.cpp" />
+    <ClCompile Include="src\libmps\monomial\tokenizer.cpp" />
+    <ClCompile Include="src\libmps\monomial\yacc-parser.cpp" />
+    <ClCompile Include="src\libmps\secsolve\secular-ga.cpp" />
+    <ClCompile Include="src\libmps\secsolve\secular-iteration.cpp" />
+    <ClCompile Include="src\libmps\secsolve\secular-regeneration.cpp" />
+    <ClCompile Include="src\libmps\secsolve\standard-regeneration-driver.cpp" />
+    <ClCompile Include="src\libmps\secular\secular-equation.cpp" />
+    <ClCompile Include="src\libmps\secular\secular-evaluation.cpp" />
+    <ClCompile Include="src\libmps\secular\secular-newton.cpp" />
+    <ClCompile Include="src\libmps\secular\secular-parser.cpp" />
+    <ClCompile Include="src\libmps\secular\secular-starting.cpp" />
+    <ClCompile Include="src\libmps\system\abstract-input-stream.cpp" />
+    <ClCompile Include="src\libmps\system\data.cpp" />
+    <ClCompile Include="src\libmps\system\debug.cpp" />
+    <ClCompile Include="src\libmps\system\file-input-stream.cpp" />
+    <ClCompile Include="src\libmps\system\getline.cpp" />
+    <ClCompile Include="src\libmps\system\getopts.cpp" />
+    <ClCompile Include="src\libmps\system\input-buffer.cpp" />
+    <ClCompile Include="src\libmps\system\input-output.cpp" />
+    <ClCompile Include="src\libmps\system\memory-file-stream.cpp" />
+    <ClCompile Include="src\libmps\system\threading.cpp" />
+    <ClCompile Include="src\libmps\unisolve\main.cpp" />
+    <ClCompile Include="src\libmps\unisolve\solve.cpp" />
+    <ClCompile Include="src\mpsolve\iteration-logger.cpp" />
+    <ClCompile Include="src\mpsolve\mpsolve.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\mps\private\formal\formal-monomial.h" />
+    <ClInclude Include="include\mps\private\formal\formal-polynomial.h" />
+    <ClInclude Include="include\mps\private\system\abstract-input-stream.h" />
+    <ClInclude Include="include\mps\private\system\file-input-stream.h" />
+    <ClInclude Include="include\mps\private\system\memory-file-stream.h" />
+    <ClInclude Include="include\mps\private\aberth.h" />
+    <ClInclude Include="include\mps\private\algorithms.h" />
+    <ClInclude Include="include\mps\private\cluster.h" />
+    <ClInclude Include="include\mps\private\convex.h" />
+    <ClInclude Include="include\mps\private\data.h" />
+    <ClInclude Include="include\mps\private\hessenberg-determinant.h" />
+    <ClInclude Include="include\mps\private\horner.h" />
+    <ClInclude Include="include\mps\private\improve.h" />
+    <ClInclude Include="include\mps\private\input-buffer.h" />
+    <ClInclude Include="include\mps\private\input-output.h" />
+    <ClInclude Include="include\mps\private\jacobi-aberth.h" />
+    <ClInclude Include="include\mps\private\list.h" />
+    <ClInclude Include="include\mps\private\mandelbrot-user.h" />
+    <ClInclude Include="include\mps\private\newton.h" />
+    <ClInclude Include="include\mps\private\options.h" />
+    <ClInclude Include="include\mps\private\radii.h" />
+    <ClInclude Include="include\mps\private\secular-evaluation.h" />
+    <ClInclude Include="include\mps\private\secular-regeneration.h" />
+    <ClInclude Include="include\mps\private\solve.h" />
+    <ClInclude Include="include\mps\private\sort.h" />
+    <ClInclude Include="include\mps\private\starting.h" />
+    <ClInclude Include="include\mps\private\starting-configuration.h" />
+    <ClInclude Include="include\mps\private\threading.h" />
+    <ClInclude Include="include\mps\private\tools.h" />
+    <ClInclude Include="include\mps\private\touch.h" />
+    <ClInclude Include="include\mps\private\utils.h" />
+    <ClInclude Include="include\mps\approximation.h" />
+    <ClInclude Include="include\mps\chebyshev.h" />
+    <ClInclude Include="include\mps\context.h" />
+    <ClInclude Include="include\mps\debug.h" />
+    <ClInclude Include="include\mps\gmptools.h" />
+    <ClInclude Include="include\mps\interface.h" />
+    <ClInclude Include="include\mps\link.h" />
+    <ClInclude Include="include\mps\matrix.h" />
+    <ClInclude Include="include\mps\monomial-matrix-poly.h" />
+    <ClInclude Include="include\mps\monomial-poly.h" />
+    <ClInclude Include="include\mps\mpc.h" />
+    <ClInclude Include="include\mps\mps.h" />
+    <ClInclude Include="include\mps\mps_unistd.h" />
+    <ClInclude Include="include\mps\mt.h" />
+    <ClInclude Include="include\mps\mt-types.h" />
+    <ClInclude Include="include\mps\nroots-polynomial.h" />
+    <ClInclude Include="include\mps\parser.h" />
+    <ClInclude Include="include\mps\polynomial.h" />
+    <ClInclude Include="include\mps\regeneration-driver.h" />
+    <ClInclude Include="include\mps\secular-equation.h" />
+    <ClInclude Include="include\mps\types.h" />
+    <ClInclude Include="include\mps\version.h" />
+    <ClInclude Include="src\mpsolve\iteration_logger.h" />
+  </ItemGroup>
+</Project>
