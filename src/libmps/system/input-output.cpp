@@ -24,7 +24,7 @@
 #endif
 
 #ifndef __WINDOWS
-#include <unistd.h>
+#include <mps_unistd.h>
 #else
 #include <io.h>
 #endif
@@ -676,3 +676,4 @@ void
   if (ctx->approx_root && ctx->lastphase)
     mps_dump (ctx);
 }
+
