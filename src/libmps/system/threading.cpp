@@ -20,7 +20,7 @@
 #endif
 
 #ifdef HAVE_UNISTD_H
-#include <unistd.h>
+#include <mps_unistd.h>
 #endif
 
 #ifdef __WINDOWS
@@ -583,3 +583,4 @@ int mps_thread_get_id(mps_context* ctx, mps_thread_pool* pool)
     }
     return -1;
 }
+
