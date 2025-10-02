@@ -18,7 +18,7 @@
 #define  MPS_DEBUG_H_
 
 #ifndef __WINDOWS
-#include <unistd.h>
+#include <mps_unistd.h>
 #else
 #include <io.h>
 #endif
@@ -325,3 +325,4 @@ void __c_impl____MPS_DEBUG(mps_context* ctx, const char* templ, ...);
 MPS_END_DECLS
 
 #endif                          /* DEBUG_H */
+
