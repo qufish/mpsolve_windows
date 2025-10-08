@@ -20,7 +20,7 @@ condition that is not checked. 'std::mutex' actually errors-out on such double-r
 The concept of a recursive mutex is not applicable here.
 
 * malloc/free is now mps_malloc/mps_free, and new/delete is now mps_new_obj/mps_new_array_obj/
-mps_del_obj/mps_del_array_obj.  structs are now obtained with new instead of malloc so that the 
+mps_delete_obj/mps_delete_array_obj.  structs are now obtained with new instead of malloc so that the 
 std:mutex variables can be initialized.
 
 * Variable-name improvements and standardization, such as 'ctx' everywhere for a ctx pointer, and such as 
