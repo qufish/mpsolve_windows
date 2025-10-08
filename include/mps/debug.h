@@ -325,4 +325,3 @@ void __c_impl____MPS_DEBUG(mps_context* ctx, const char* templ, ...);
 MPS_END_DECLS
 
 #endif                          /* DEBUG_H */
-

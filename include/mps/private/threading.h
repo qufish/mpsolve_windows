@@ -397,9 +397,9 @@ void mps_thread_pool_free(mps_context* ctx, mps_thread_pool* pool);
 
 mps_thread_job_queue* mps_thread_job_queue_new(mps_context* ctx);
 
-void mps_thread_job_queue_free(mps_thread_job_queue* g);
+void mps_thread_job_queue_free(mps_thread_job_queue* q);
 
-mps_thread_job mps_thread_job_queue_next(mps_context* ctx, mps_thread_job_queue* g);
+mps_thread_job mps_thread_job_queue_next(mps_context* ctx, mps_thread_job_queue* q);
 
 void mps_thread_fpolzer(mps_context* ctx, int* nit, mps_boolean* excep, int required_zeros);
 
@@ -407,7 +407,7 @@ void mps_thread_mpolzer(mps_context* ctx, int* nit, mps_boolean* excep, int requ
 
 void mps_thread_dpolzer(mps_context* ctx, int* nit, mps_boolean* excep, int required_zeros);
 
-int mps_thread_get_code_number(mps_context* ctx);
+int mps_thread_get_core_number(mps_context* ctx);
 
 int mps_thread_get_id(mps_context* ctx, mps_thread_pool* pool);
 

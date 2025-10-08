@@ -60,7 +60,7 @@
 
 #define mps_thread_join(threadptr) \
     (*(threadptr)).join(); \
-    mps_del_obj(threadptr)
+    mps_delete_obj(threadptr)
 #define mps_thread_processing_exit(thread) 
 #define mps_thread_t std::thread
 #define mps_start_new_thread(threadptr,method,arg) \
@@ -110,7 +110,8 @@ mps_mutex_lock(mutexvar)
 #define mps_tls_create(key,keytype,keyinit,ptr) \
     keytype* ptr = &key; \
     keyinit = true
-#define mps_tls_setspecific(key,keyinit,ptr)
+#define mps_tls_setspecific(key,keyinit,ptr,clean_method) \
+  mps_sched_tls_cleanup(clean_method, (void*)ptr)
 #define mps_tls_getspecific(key,keyinit) \
 keyinit? &key:NULL
 #define mps_tls_key_create(key,clean_method)
@@ -123,7 +124,7 @@ keyinit? &key:NULL
 #define mps_initialized_mutex(mutexvar,type) pthread_mutex_t mutexvar = type
 #define mps_thread_join(threadptr) \
   pthread_join((*(threadptr)),NULL); \
-  mps_del_obj(threadptr)
+  mps_delete_obj(threadptr)
 #define mps_thread_processing_exit(thread) pthread_exit(NULL)
 #define mps_thread_t pthread_t
 #define mps_start_new_thread(threadptr,method,arg) \
@@ -132,21 +133,32 @@ keyinit? &key:NULL
 #define mps_thread_id_t pthread_t
 #define mps_thread_self() pthread_self()
 #define mps_thread_equal(thread, self) pthread_equal (thread, self)
-#define mps_thread_create(threadptr,method,start_arg) pthread_create(&threadptr,NULL,method,start_arg)
+#define mps_thread_create(threadptr,method,start_arg) pthread_create(threadptr,NULL,method,start_arg)
 #define mps_thread_yield() sched_yield()
 
 #define mps_unique_mutex(mutexvar) pthread_mutex_t mutexvar
 #define mps_static_tls_struct_init(keyinit)
 #define mps_tls_struct(key) static pthread_key_t key
-#define mps_tls_create(key,keytype,keyinit,ptr) mps_new_obj(keytype, ptr, sizeof(keytype))
-#define mps_tls_setspecific(key,keyinit,ptr) pthread_setspecific(key,ptr)
+#define mps_tls_create(key,keytype,keyinit,ptr) \
+  mps_new_obj(keytype, ptr, sizeof(keytype))
+#define mps_tls_setspecific(key,keyinit,ptr,clean_method) pthread_setspecific(key,ptr)
 #define mps_tls_getspecific(key,keyinit) pthread_getspecific(key)
 #define mps_tls_key_create(key,clean_method) pthread_key_create(key,clean_method)
 
 #define mps_mutex_lock(mutexvar) pthread_mutex_lock(&(mutexvar))
 #define mps_mutex_unlock(mutexvar) pthread_mutex_unlock(&(mutexvar))
 #define mps_mutex_init(mutexvar) pthread_mutex_init(&(mutexvar),NULL)
+#ifdef _DEBUG
+#define mps_mutex_destroy(mutexvar) \
+{ \
+    char* ptr; \
+    ptr = (char*)calloc(1, 10); /* some weird error with pthread's free in this destroy under debug, but it works if we do this first */\
+    free(ptr); \
+    pthread_mutex_destroy(&mutexvar); \
+}
+#else
 #define mps_mutex_destroy(mutexvar) pthread_mutex_destroy(&mutexvar)
+#endif
 #define mps_once_t pthread_once_t
 #define mps_static_initialized_once(var,type) static pthread_once_t var = type
 #define mps_once(once_key,create_key_method) pthread_once(&once_key,create_key_method)
@@ -157,15 +169,25 @@ keyinit? &key:NULL
 #define mps_new_unique_mutex(name,uniquemutex) new mps_unique_mutex_t
 #define mps_del_unique_mutex(name,assocmutex) 
 #define mps_cond_init(cond) pthread_cond_init(&(cond), NULL)
-#define mps_cond_destroy(cond) pthread_cond_destroy(&(cond), NULL)
+#ifdef _DEBUG
+#define mps_cond_destroy(cond) \
+{ \
+    char* ptr; \
+    ptr = (char*)calloc(1, 10); /* some weird error with pthread's free in this destroy under debug, but it works if we do this first */\
+    free(ptr); \
+    pthread_cond_destroy(&(cond)); \
+}
+#else
+#define mps_cond_destroy(cond) pthread_cond_destroy(&(cond))
+#endif
 #define mps_cond_broadcast(cond,assocmutex) pthread_cond_broadcast(&(cond))
 #define mps_cond_signal(cond,assocmutex) pthread_cond_signal(&(cond))
 #define mps_cond_wait(cond,assocmutex,mutexvar,donecond) pthread_cond_wait(&(cond),&(mutexvar))
 #endif
 
 // this is the same for both mutex handlers
-#define mps_mutex_tracked_lock(mutexvar) mps_tracked_lock(mutexvar)
-#define mps_mutex_tracked_unlock(mutexvar) mps_tracked_unlock(mutexvar)
+#define mps_mutex_guarded_lock(mutexvar) mps_guarded_lock(mutexvar)
+#define mps_mutex_guarded_unlock(mutexvar) mps_guarded_unlock(mutexvar)
 
 #include <mps_unistd.h> 
 
@@ -241,10 +263,10 @@ MPS_END_DECLS
 #include <mps/private/secular-regeneration.h>
 #endif
 
-#define ERRMSG_SIZE 5000
+static const short MPS_ERRMSG_SIZE = 5000;
 void mps_fatal_exit(char* errmsg);
-bool mps_tracked_lock(mps_mutex_t& target_mutex);
-bool mps_tracked_unlock(mps_mutex_t& target_mutex);
+bool mps_guarded_lock(mps_mutex_t& target_mutex);
+bool mps_guarded_unlock(mps_mutex_t& target_mutex);
 
 #define mps_new_obj(objname,varname,varsize) \
 objname * varname = new objname
@@ -253,7 +275,7 @@ objname * varname = new objname
 varname = new objname
 
 #pragma warning( disable : 4150 )
-#define mps_del_obj(objname) \
+#define mps_delete_obj(objname) \
 delete objname; \
 objname = NULL
 
@@ -263,7 +285,7 @@ objname * varname = new objname[count]
 #define mps_new_defined_array_obj(objname,varname,varsize,count) \
 varname = new objname[count]
 
-#define mps_del_array_obj(objname) \
+#define mps_delete_array_obj(objname) \
 delete[] objname; \
 objname = NULL
 
