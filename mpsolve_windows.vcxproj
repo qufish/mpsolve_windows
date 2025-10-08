@@ -63,9 +63,9 @@
     <Link>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(mpsolve_mpfr_lib);$(mpsolve_mpir_lib);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">mpfr.lib;mpir.lib;ucrtd.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)'=='Release'">mpfr.lib;mpir.lib;ucrt.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(mpsolve_mpfr_lib);$(mpsolve_mpir_lib);$(mpsolve_root)pthreads4w-cmake\build;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Debug'">mpfr.lib;mpir.lib;ucrtd.lib;libpthreadVC3d.lib;libpthreadVCE3d.lib;libpthreadVSE3d.lib;pthreadVC3d.lib;pthreadVCE3d.lib;pthreadVSE3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)'=='Release'">mpfr.lib;mpir.lib;ucrt.lib;libpthreadVC3.lib;libpthreadVCE3.lib;libpthreadVSE3.lib;pthreadVC3.lib;pthreadVCE3.lib;pthreadVSE3.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <SubSystem>Console</SubSystem>
       <OutputFile>$(mpsolve_exec)$(Configuration)\$(TargetName)$(TargetExt)</OutputFile>
       <ProfileGuidedDatabase Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(TargetDir)$(TargetName).pgd</ProfileGuidedDatabase>
@@ -82,8 +82,8 @@
       <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(mpsolve_include);$(mpsolve_root)include\mps;C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.42.34433\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <ClCompile>
-	  <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(mpsolve_include);$(mpsolve_root)include\mps;C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.42.34433\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-	</ClCompile>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(mpsolve_include);$(mpsolve_root)include\mps;C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.42.34433\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Label="Configuration">
     <ClCompile>
