@@ -22,13 +22,23 @@ struct mps_tls {
     struct mps_tls* next_tls;
 };
 
+#ifndef MPS_USE_PTHREADS
+static mps_mutex_t tls_mutex;
+static bool tls_mutex_init = false;
+struct TLS_CLEANUP
+{
+    struct TLS_CLEANUP* next_tls;
+    void (*cleanup_method)(void*);
+    void* tls_data;
+} *first_tls_cleanup;
+#endif
+
 typedef struct mps_tls mps_tls;
 
 mps_static_initialized_once(once_key_created, PTHREAD_ONCE_INIT);
 mps_static_tls_struct_init(key_init);
 mps_tls_struct(key);
 
-#ifdef MPS_USE_PTHREADS
 static void
     mps_mpc_cache_cleanup(void* pointer)
 {
@@ -38,10 +48,70 @@ static void
     for (i = 0; i < MPS_MPF_TEMP_SIZE; i++)
         mpf_clear(tls->data[i]);
 
-    mps_del_array_obj(tls->data);
-    mps_del_obj(tls);
+    mps_free(tls->data);
+#ifdef MPS_USE_PTHREADS
+    mps_delete_obj(tls);
+#else
+    key_init = false;
+#endif
+}
+
+#ifndef MPS_USE_PTHREADS
+static void
+mps_sched_tls_cleanup(void (*cleanup_method)(void*), void* tls_data)
+{
+    if (!tls_mutex_init)
+    {
+        mps_mutex_init(tls_mutex);
+        tls_mutex_init = true;
+    }
+    mps_mutex_lock(tls_mutex);
+
+    mps_new_obj(TLS_CLEANUP, new_tls, sizeof(TLS_CLEANUP));
+    memset(new_tls, 0, sizeof(TLS_CLEANUP));
+    new_tls->next_tls = first_tls_cleanup;
+    first_tls_cleanup = new_tls;
+    new_tls->cleanup_method = cleanup_method;
+    new_tls->tls_data = tls_data;
+
+    mps_mutex_unlock(tls_mutex);
+    mps_mutex_destroy(tls_mutex);
+    tls_mutex_init = false;
 }
 #endif
+
+void mps_perform_tls_cleanup()
+{
+#ifndef MPS_USE_PTHREADS
+    if (!tls_mutex_init)
+    {
+        mps_mutex_init(tls_mutex);
+        tls_mutex_init = true;
+    }
+    mps_mutex_lock(tls_mutex);
+
+    while (first_tls_cleanup)
+    {
+        TLS_CLEANUP* next_tls;
+        next_tls = first_tls_cleanup->next_tls;
+
+        first_tls_cleanup->cleanup_method(first_tls_cleanup->tls_data);
+
+        mps_delete_obj(first_tls_cleanup);
+        first_tls_cleanup = next_tls;
+    }
+
+    mps_mutex_unlock(tls_mutex);
+    mps_mutex_destroy(tls_mutex);
+    tls_mutex_init = false;
+#endif
+}
+
+static void
+create_key_method(void)
+{
+    mps_tls_key_create(&key, mps_mpc_cache_cleanup);
+}
 
 static mps_tls*
     create_new_mps_tls(long int precision_needed)
@@ -53,7 +123,6 @@ static mps_tls*
     tls->next_tls = NULL;
 
     tls->data = mps_newv(mpf_t, MPS_MPF_TEMP_SIZE);
-    // that may be a memory leak
     tls->precision = precision_needed;
 
     for (i = 0; i < MPS_MPF_TEMP_SIZE; i++)
@@ -61,7 +130,7 @@ static mps_tls*
 
     /* in pthreads, Set up a destructor for this data in case the thread exits */
     /* in std, do nothing because tls is already extant */
-    mps_tls_setspecific(key, key_init, tls);
+    mps_tls_setspecific(key, key_init, tls, mps_mpc_cache_cleanup);
 
     return tls;
 }
@@ -75,12 +144,6 @@ static void
         mpf_set_prec(tls->data[i], precision_needed);
 
     tls->precision = precision_needed;
-}
-
-static void
-    create_key_method(void)
-{
-    mps_tls_key_create(&key, mps_mpc_cache_cleanup);
 }
 
 static mpf_t*

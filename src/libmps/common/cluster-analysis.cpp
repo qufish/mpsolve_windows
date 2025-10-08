@@ -516,9 +516,9 @@ void*
     }
 
     // unlock it only if I own it
-    mps_mutex_tracked_unlock(*data->block_mutex);
+    mps_mutex_guarded_unlock(*data->block_mutex);
 
-    mps_del_obj(data);
+    mps_delete_obj(data);
 
     return NULL;
 }
@@ -657,7 +657,7 @@ MPS_PRIVATE void
                 data->nf = nf;
                 data->block_mutex = &block_mutexes[j];
                 data->original_clusters = original_clusters;
-                mps_mutex_tracked_lock(*data->block_mutex);
+                mps_mutex_guarded_lock(*data->block_mutex);
                 mps_thread_pool_assign(ctx, ctx->pool, _mps_mcluster_worker, data);
             }
 
@@ -673,9 +673,9 @@ MPS_PRIVATE void
             for (j = 0; root->prev_root == NULL && j < block_number; j++)
             {
                 // this may find we already own the lock and do nothing
-                mps_mutex_tracked_lock(block_mutexes[j]);
+                mps_mutex_guarded_lock(block_mutexes[j]);
                 // release it only if I still own it (e.g.,  a worker doing it in this thread has not released it for me)
-                mps_mutex_tracked_unlock(block_mutexes[j]);
+                mps_mutex_guarded_unlock(block_mutexes[j]);
             }
 
             analyzed_roots++;
@@ -687,7 +687,7 @@ MPS_PRIVATE void
     {
         mps_mutex_destroy(block_mutexes[j]);
     }
-    mps_del_array_obj(block_mutexes);
+    mps_delete_array_obj(block_mutexes);
 
     mps_free(already_analyzed_roots);
     mps_free(original_clusters);

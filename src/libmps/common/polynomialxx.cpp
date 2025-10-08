@@ -122,7 +122,7 @@ void
 	Polynomial::free_wrapper(mps_context* ctx, mps_polynomial* p)
 {
 	Polynomial* thisP = static_cast<Polynomial*> (p);
-	mps_del_obj(thisP);
+	mps_delete_obj(thisP);
 }
 
 long int

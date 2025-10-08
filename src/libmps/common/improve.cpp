@@ -109,7 +109,7 @@ static void*
     __improve_root_data* data = (__improve_root_data*)data_ptr;
 
     improve_root(data->ctx, data->p, data->root, data->precision);
-    mps_del_obj(data);
+    mps_delete_obj(data);
     return NULL;
 }
 

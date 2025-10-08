@@ -100,7 +100,7 @@ void
 
     mps_mutex_destroy(cpoly->precision_mutex);
 
-    mps_del_obj(poly);
+    mps_delete_obj(poly);
 }
 
 long int

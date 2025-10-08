@@ -48,7 +48,7 @@ static void*
     {
         ctx->approx_root[i]->status = MPS_ROOT_STATUS_NOT_FLOAT;
         fradii[i] = DBL_MAX;
-        mps_del_obj(data);
+        mps_delete_obj(data);
         return NULL;
     }
 
@@ -119,7 +119,7 @@ static void*
         + DBL_MIN;
 
     mpc_clear(lc);
-    mps_del_obj(data);
+    mps_delete_obj(data);
 
     return NULL;
 }

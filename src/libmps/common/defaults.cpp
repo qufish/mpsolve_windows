@@ -44,7 +44,7 @@ MPS_PRIVATE void
 
     /* Set number of threads to 1.5 * number_of_cores, if this is
     * computable. Set it to 12 otherwise.                     */
-    ctx->n_threads = (int)1.5 * mps_thread_get_code_number(ctx);
+    ctx->n_threads = (int)1.5 * mps_thread_get_core_number(ctx);
     if (!ctx->n_threads)
         ctx->n_threads = 12;
 

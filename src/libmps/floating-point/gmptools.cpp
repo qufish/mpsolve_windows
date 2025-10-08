@@ -91,9 +91,9 @@
  void
      mpq_out_str(FILE* stream, int base, mpq_t q)
  {
-     mpz_out_str(stdout, base, mpq_numref(g));
+     mpz_out_str(stdout, base, mpq_numref(q));
      putc('/', stream);
-     mpz_out_str(stdout, base, mpq_denref(g));
+     mpz_out_str(stdout, base, mpq_denref(q));
  }
 #endif
 

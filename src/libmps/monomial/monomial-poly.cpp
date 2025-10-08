@@ -139,8 +139,8 @@ void
     for (i = 0; i <= MPS_POLYNOMIAL(mp)->degree; i++)
         mps_mutex_destroy(mp->mfpc_mutex[i]);
 
-    mps_del_array_obj(mp->mfpc_mutex);
-    mps_del_obj(mp);
+    mps_delete_array_obj(mp->mfpc_mutex);
+    mps_delete_obj(mp);
 }
 
 /**

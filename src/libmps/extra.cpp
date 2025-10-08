@@ -9,7 +9,7 @@ static bool bIsFatalExit;
 
 void mps_fatal_exit(char* errmsg)
 {
-    char msg[ERRMSG_SIZE];
+    char msg[MPS_ERRMSG_SIZE];
 
 #ifndef NUM_USE_THREAD_SAFE
     while (bIsFatalExit)  // once a fatal exit occurs in mpsolve, pause all other mpsolve threads while this one exits
@@ -29,7 +29,7 @@ void mps_fatal_exit(char* errmsg)
     exit(1);   // there are multiple threads, a 'throw' won't be be caught by any try/catch elsewhere
 }
 
-static mps_mutex_t guard_list_mutex;
+static mps_mutex_t guarded_list_mutex;
 static bool bGuardListMutexInitialized;
 static struct MUTEX_OWNERSHIP
 {
@@ -40,7 +40,7 @@ static struct MUTEX_OWNERSHIP
 
 //  lock but only if not already locked by the calling thread
 
-bool mps_tracked_lock(mps_mutex_t& target_mutex)
+bool mps_guarded_lock(mps_mutex_t& target_mutex)
 {
     int sys_thread_id;
     MUTEX_OWNERSHIP* new_owner, * this_owner;
@@ -48,7 +48,7 @@ bool mps_tracked_lock(mps_mutex_t& target_mutex)
 
     if (!bGuardListMutexInitialized)
     {
-        mps_mutex_init(guard_list_mutex);
+        mps_mutex_init(guarded_list_mutex);
         bGuardListMutexInitialized = true;
     }
 
@@ -57,7 +57,7 @@ bool mps_tracked_lock(mps_mutex_t& target_mutex)
 
     while (1)
     {
-        mps_mutex_lock(guard_list_mutex);
+        mps_mutex_lock(guarded_list_mutex);
 
         this_owner = first_owner;
         while (this_owner)
@@ -66,7 +66,7 @@ bool mps_tracked_lock(mps_mutex_t& target_mutex)
             {
                 if (this_owner->owner_thread_id == sys_thread_id)
                 {
-                    mps_mutex_unlock(guard_list_mutex);
+                    mps_mutex_unlock(guarded_list_mutex);
                     if (bLockAcquired) return true;         // this method has just done the lock which was not a dup
                     return false;                           // the target mutex is already owned by this thread, a duplicate lock is not attempted
                 }
@@ -84,7 +84,7 @@ bool mps_tracked_lock(mps_mutex_t& target_mutex)
             new_owner->owner_thread_id = sys_thread_id;
             new_owner->owned_mutex = &target_mutex;
 
-            mps_mutex_unlock(guard_list_mutex);
+            mps_mutex_unlock(guarded_list_mutex);
 
             // acquire the lock which probably won't wait since this thread is the registered owner
             mps_mutex_lock(target_mutex);
@@ -93,7 +93,7 @@ bool mps_tracked_lock(mps_mutex_t& target_mutex)
         }
 
         // it is owned but by a different thread, ok to issue a lock which won't be a dup and will probably wait (after releasing the list)
-        mps_mutex_unlock(guard_list_mutex);
+        mps_mutex_unlock(guarded_list_mutex);
         mps_mutex_lock(target_mutex);   // use mutex logic to wait
         mps_mutex_unlock(target_mutex);
         continue;  // see if it is now availble for locking after registering in the list
@@ -103,20 +103,20 @@ bool mps_tracked_lock(mps_mutex_t& target_mutex)
 
 //  unlock but only if owned by the calling thread
 
-bool mps_tracked_unlock(mps_mutex_t& target_mutex)
+bool mps_guarded_unlock(mps_mutex_t& target_mutex)
 {
     int sys_thread_id;
     MUTEX_OWNERSHIP* last_owner, * this_owner;
 
     if (!bGuardListMutexInitialized)
     {
-        mps_mutex_init(guard_list_mutex);
+        mps_mutex_init(guarded_list_mutex);
         bGuardListMutexInitialized = true;
     }
 
     sys_thread_id = GetCurrentThreadId();
 
-    mps_mutex_lock(guard_list_mutex);
+    mps_mutex_lock(guarded_list_mutex);
 
     this_owner = first_owner;
     last_owner = NULL;
@@ -138,7 +138,7 @@ bool mps_tracked_unlock(mps_mutex_t& target_mutex)
                 delete this_owner;
 
                 mps_mutex_unlock(target_mutex);
-                mps_mutex_unlock(guard_list_mutex);
+                mps_mutex_unlock(guarded_list_mutex);
                 return true;         // this method has just done the release which was not a dup
             }
             break;             // owned but by a different thread
@@ -148,6 +148,6 @@ bool mps_tracked_unlock(mps_mutex_t& target_mutex)
     }
 
     //  it was not owned by me, skip the release
-    mps_mutex_unlock( guard_list_mutex);
+    mps_mutex_unlock( guarded_list_mutex);
     return false;
 }

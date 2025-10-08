@@ -63,7 +63,7 @@ void
     mpq_vclear(mpoly->mpqPi, mpoly->m * (poly->degree + mpoly->m));
     mps_free(mpoly->mpqPi);
 
-    mps_del_obj(poly);
+    mps_delete_obj(poly);
 }
 
 void mps_monomial_matrix_poly_add_flags(mps_context* ctx,

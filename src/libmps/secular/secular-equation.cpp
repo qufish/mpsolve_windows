@@ -489,11 +489,11 @@ void
     /* sec is actually the incoming p at this point*/
     mps_mutex_destroy(sec->precision_mutex);
 
-    mps_del_array_obj(sec->ampc_mutex);
-    mps_del_array_obj(sec->bmpc_mutex);
+    mps_delete_array_obj(sec->ampc_mutex);
+    mps_delete_array_obj(sec->bmpc_mutex);
 
     /* ...and then release it */
-    mps_del_obj(sec);
+    mps_delete_obj(sec);
 }
 
 /**

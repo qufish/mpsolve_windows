@@ -27,7 +27,7 @@ mps_formal_monomial_new_with_strings(const char* real, const char* imag,
 void
 mps_formal_monomial_free(mps_formal_monomial* m)
 {
-    mps_del_obj(m);
+    mps_delete_obj(m);
 }
 
 void

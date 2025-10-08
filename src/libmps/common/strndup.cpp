@@ -22,6 +22,7 @@ char*
     size_t length = strlen(source);
 
     dest = mps_newv(char, (int)length + 1);
+    // that may be a memory leak
     strcpy(dest, source);
 
     return dest;

@@ -75,11 +75,11 @@ void
     {
         old_root = root;
         root = root->next_root;
-        mps_del_obj(old_root);
+        mps_delete_obj(old_root);
     }
 
     mps_mutex_destroy(cluster->list_lock);
-    mps_del_obj(cluster);
+    mps_delete_obj(cluster);
 }
 
 /**
@@ -139,7 +139,7 @@ void
     cluster->n--;
 
     /* Free the root */
-    mps_del_obj(root);
+    mps_delete_obj(root);
 }
 
 /**
@@ -266,7 +266,7 @@ void
 {
     mps_clusterization_pop_cluster(ctx, clusterization, cluster_item);
     mps_cluster_free(ctx, cluster_item->cluster);
-    mps_del_obj(cluster_item);
+    mps_delete_obj(cluster_item);
 }
 
 /**
@@ -284,11 +284,11 @@ void
     {
         mps_cluster_free(ctx, cluster_item->cluster);
         next_cluster_item = cluster_item->next_cluster_item;
-        mps_free(cluster_item);
+        mps_delete_obj(cluster_item);
         cluster_item = next_cluster_item;
     }
 
-    mps_free(clusterization);
+    mps_delete_obj(clusterization);
 }
 
 /**

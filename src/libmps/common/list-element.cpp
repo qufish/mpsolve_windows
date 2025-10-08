@@ -24,7 +24,7 @@ mps_list_element*
 void
 	mps_list_element_free(mps_list_element* list_element)
 {
-	mps_del_obj(list_element);
+	mps_delete_obj(list_element);
 }
 
 mps_list_element*

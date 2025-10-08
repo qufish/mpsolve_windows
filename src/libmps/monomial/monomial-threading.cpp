@@ -155,8 +155,8 @@ MPS_PRIVATE void
             nzeros++;
     if (nzeros == ctx->n)
     {
-        mps_del_array_obj(roots_mutex);
-        mps_del_array_obj(aberth_mutex);
+        mps_delete_array_obj(roots_mutex);
+        mps_delete_array_obj(aberth_mutex);
         mps_thread_job_queue_free(queue);
         return;
     }
@@ -187,9 +187,9 @@ MPS_PRIVATE void
         mps_mutex_destroy(roots_mutex[i]);
         mps_mutex_destroy(aberth_mutex[i]);
     }
-    mps_del_array_obj(data_array);
-    mps_del_array_obj(roots_mutex);
-    mps_del_array_obj(aberth_mutex);
+    mps_delete_array_obj(data_array);
+    mps_delete_array_obj(roots_mutex);
+    mps_delete_array_obj(aberth_mutex);
     mps_thread_job_queue_free(queue);
 }
 
@@ -357,9 +357,9 @@ MPS_PRIVATE void
             mps_mutex_destroy(aberth_mutex[i]);
         }
     }
-    mps_del_array_obj(roots_mutex);
-    mps_del_array_obj(aberth_mutex);
-    mps_del_array_obj(data_array);  // the sub-workers did not delete their individual pointers
+    mps_delete_array_obj(roots_mutex);
+    mps_delete_array_obj(aberth_mutex);
+    mps_delete_array_obj(data_array);  // the sub-workers did not delete their individual pointers
     mps_thread_job_queue_free(queue);
 }
 
@@ -589,13 +589,13 @@ MPS_PRIVATE void
     mps_thread_pool_wait(ctx, ctx->pool);
 
     /* Free data and exit */
-    mps_del_array_obj(data_array);  // the sub-workers did not delete their individual pointers
+    mps_delete_array_obj(data_array);  // the sub-workers did not delete their individual pointers
     for (i = 0; i < ctx->n; i++)
     {
         mps_mutex_destroy(roots_mutex[i]);
         mps_mutex_destroy(aberth_mutex[i]);
     }
-    mps_del_array_obj(roots_mutex);
-    mps_del_array_obj(aberth_mutex);
+    mps_delete_array_obj(roots_mutex);
+    mps_delete_array_obj(aberth_mutex);
     mps_thread_job_queue_free(queue);
 }

@@ -45,7 +45,7 @@ static mps_initialized_mutex(system_thread_pool_lock, PTHREAD_MUTEX_INITIALIZER)
 * known to this implementations.
 */
 MPS_PRIVATE int
-    mps_thread_get_code_number(mps_context* ctx)
+    mps_thread_get_core_number(mps_context* ctx)
 {
     int cores = 0;
     char* cores_env = NULL;
@@ -124,7 +124,7 @@ void
     mps_thread_job_queue_free(mps_thread_job_queue* q)
 {
     mps_mutex_destroy(q->job_queue_mutex);
-    mps_del_obj(q);
+    mps_delete_obj(q);
 }
 
 /**
@@ -225,7 +225,7 @@ MPS_PRIVATE void*
 
             item->work(item->work_args);   // do the work then return
 
-            mps_del_obj(item);
+            mps_delete_obj(item);
         }
         else  // this pool's job queue is empty
         {
@@ -266,7 +266,7 @@ MPS_PRIVATE void*
 MPS_PRIVATE void
 mps_thread_start_mainloop (mps_context * ctx, mps_thread * thread)
 {
-    mps_thread_create(thread->sys_thread, &mps_thread_mainloop, thread)
+    mps_thread_create(thread->sys_thread, &mps_thread_mainloop, thread);
 }
 
 /**
@@ -279,7 +279,7 @@ void mps_thread_pool_set_concurrency_limit(mps_context* ctx, mps_thread_pool* po
         pool = ctx->pool;
 
     if (concurrency_limit == 0)
-        concurrency_limit = mps_thread_get_code_number(ctx);
+        concurrency_limit = mps_thread_get_core_number(ctx);
 
     if (concurrency_limit < pool->concurrency_limit)
     {
@@ -437,9 +437,9 @@ void
     // then after the thread has exited
     if (thread->sys_thread)
     {
-        mps_del_obj(thread->sys_thread);
+        mps_delete_obj(thread->sys_thread);
     }
-    mps_del_obj(thread);
+    mps_delete_obj(thread);
 }
 
 /**
@@ -506,7 +506,7 @@ mps_thread_pool*
     }
     else
     {
-        threads = mps_thread_get_code_number(ctx);
+        threads = mps_thread_get_core_number(ctx);
     }
 
     pool->n = 0;
@@ -560,9 +560,9 @@ void
     mps_mutex_destroy(pool->work_completed_mutex);
     mps_cond_destroy(pool->work_completed_cond);
 
-    mps_del_obj(pool->queue);
+    mps_delete_obj(pool->queue);
 
-    mps_del_obj(pool);
+    mps_delete_obj(pool);
 }
 
 int mps_thread_get_id(mps_context* ctx, mps_thread_pool* pool)
@@ -583,4 +583,3 @@ int mps_thread_get_id(mps_context* ctx, mps_thread_pool* pool)
     }
     return -1;
 }
-

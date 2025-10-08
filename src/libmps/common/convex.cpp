@@ -199,7 +199,7 @@ MPS_PRIVATE mps_linear_hypograph*
 MPS_PRIVATE void
     mps_linear_hypograph_free(mps_context* ctx, mps_linear_hypograph* sl)
 {
-    mps_del_obj(sl);
+    mps_delete_obj(sl);
 }
 
 MPS_PRIVATE void

@@ -282,10 +282,10 @@ MPS_PRIVATE int
     mps_mutex_destroy(gs_mutex);
     
     mps_thread_job_queue_free(queue);
-    mps_del_array_obj(data_array);  // the sub-workers did not delete their individual pointers
+    mps_delete_array_obj(data_array);  // the sub-workers did not delete their individual pointers
 
-    mps_del_array_obj(roots_mutex);
-    mps_del_array_obj(aberth_mutex);
+    mps_delete_array_obj(roots_mutex);
+    mps_delete_array_obj(aberth_mutex);
 
     /* Return the number of approximated roots */
     return computed_roots;
@@ -481,10 +481,10 @@ MPS_PRIVATE int
     }
 
     mps_thread_job_queue_free(queue);
-    mps_del_array_obj(aberth_mutex);
-    mps_del_array_obj(roots_mutex);
+    mps_delete_array_obj(aberth_mutex);
+    mps_delete_array_obj(roots_mutex);
  
-    mps_del_array_obj(data_array);  // the sub-workers did not delete their individual pointers
+    mps_delete_array_obj(data_array);  // the sub-workers did not delete their individual pointers
 
     /* Return the number of approximated roots */
     return computed_roots;
@@ -741,10 +741,10 @@ MPS_PRIVATE int
     }
 
     mps_thread_job_queue_free(queue);
-    mps_del_array_obj(aberth_mutex);
-    mps_del_array_obj(roots_mutex);
+    mps_delete_array_obj(aberth_mutex);
+    mps_delete_array_obj(roots_mutex);
 
-    mps_del_array_obj(data_array);  // the sub-workers did not delete their individual pointers
+    mps_delete_array_obj(data_array);  // the sub-workers did not delete their individual pointers
 
     /* Return the number of approximated roots */
     return computed_roots;

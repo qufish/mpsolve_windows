@@ -16,13 +16,15 @@ using namespace mps;
 mps_memory_file_stream*
     mps_memory_file_stream_new(const char* source)
 {
-    return reinterpret_cast<mps_memory_file_stream*> (new MemoryFileStream(source));
+    MemoryFileStream* ptr;
+    mps_new_defined_obj(MemoryFileStream(source), ptr, sizeof(MemoryFileStream));
+    return reinterpret_cast<mps_memory_file_stream*> (ptr);
 }
 
 void
     mps_memory_file_stream_free(mps_memory_file_stream* stream)
 {
-    delete reinterpret_cast<MemoryFileStream*> (stream);
+    mps_delete_obj(stream);
 }
 
 #define MPS_MAXIMUM_LINE_LENGTH (1024 * 1024)

@@ -16,7 +16,7 @@
 void
     _mps_polynomial_free(mps_context* ctx, mps_polynomial* p)
 {
-    mps_del_obj(p);
+    mps_delete_obj(p);
 }
 
 long int

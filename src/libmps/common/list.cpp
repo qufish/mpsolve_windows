@@ -37,7 +37,7 @@ void
         mps_list_element_free(list_element);
     }
 
-    mps_del_obj(list);
+    mps_delete_obj(list);
 }
 
 /**

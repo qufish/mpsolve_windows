@@ -15,6 +15,8 @@
 #include <mps/mps.h>
 #include <string.h>
 
+extern void mps_perform_tls_cleanup();
+
 long int
     mps_context_get_minimum_precision(mps_context* ctx)
 {
@@ -157,7 +159,9 @@ void
     if (ctx->secular_equation)
         mps_secular_equation_free(ctx, MPS_POLYNOMIAL(ctx->secular_equation));
 
-    mps_del_obj(ctx);
+    mps_delete_obj(ctx);
+
+    mps_perform_tls_cleanup();
 }
 
 void

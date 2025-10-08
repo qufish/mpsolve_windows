@@ -14,13 +14,15 @@ using namespace mps;
 
 mps_file_input_stream* mps_file_input_stream_new(FILE* source)
 {
-    return reinterpret_cast<mps_file_input_stream*>(new FileInputStream(source));
+    FileInputStream* ptr;
+    mps_new_defined_obj(FileInputStream(source), ptr, sizeof(FileInputStream));
+    return reinterpret_cast<mps_file_input_stream*> (ptr);
 }
 
 void
     mps_file_input_stream_free(mps_file_input_stream* stream)
 {
-    delete reinterpret_cast<FileInputStream*> (stream);
+    mps_delete_obj(stream);
 }
 
 FileInputStream::FileInputStream(FILE* source)

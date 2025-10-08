@@ -58,7 +58,9 @@ static void*
     /* In case of a unique element in the thread pool
     * the function call system has been optimized out. */
     if (ctx->pool->n > 1)
-        mps_del_obj(data);
+    {
+        mps_delete_obj(data);
+    }
 
     return NULL;
 }
@@ -229,7 +231,7 @@ static void*
             root->again = false;
     }
 
-    mps_del_obj(data);
+    mps_delete_obj(data);
     return NULL;
 }
 
@@ -394,7 +396,7 @@ static void*
     mpc_clear(corr);
     mpc_clear(abcorr);
 
-    mps_del_obj(data);
+    mps_delete_obj(data);
 
     return NULL;
 }

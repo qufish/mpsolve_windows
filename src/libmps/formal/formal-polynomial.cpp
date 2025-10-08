@@ -89,7 +89,7 @@ void
 void
     mps_formal_polynomial_free(mps_formal_polynomial* p)
 {
-    mps_del_obj(p);
+    mps_delete_obj(p);
 }
 
 Polynomial::Polynomial()
@@ -118,7 +118,7 @@ const Monomial
 {
     if (degree > this->degree() || degree < 0)
     {
-        char errmsg[ERRMSG_SIZE];
+        char errmsg[MPS_ERRMSG_SIZE];
         sprintf(errmsg, "Method operator[]: Invalid degree specified");
         mps_fatal_exit(errmsg);  // will not return
         return mMonomials[degree];

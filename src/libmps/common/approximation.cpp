@@ -33,7 +33,7 @@ void
     mps_approximation_free(mps_context* ctx, mps_approximation* appr)
 {
     mpc_clear(appr->mvalue);
-    mps_del_obj(appr);
+    mps_delete_obj(appr);
 }
 
 mps_approximation*

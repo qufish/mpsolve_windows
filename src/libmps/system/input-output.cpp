@@ -676,4 +676,3 @@ void
   if (ctx->approx_root && ctx->lastphase)
     mps_dump (ctx);
 }
-
