@@ -25,7 +25,7 @@
 #endif
 
 #ifndef MPS_PATCH_VERSION
-#define MPS_PATCH_VERSION 1
+#define MPS_PATCH_VERSION 2
 #endif
 
 const char* mps_get_version();

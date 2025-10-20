@@ -44,10 +44,10 @@ mps_monomial_poly* mps_formal_polynomial_create_monomial_poly(mps_formal_polynom
     mps_context* ctx);
 
 mps_formal_polynomial* mps_formal_polynomial_mul(mps_formal_polynomial* p,
-    mps_formal_polynomial* g);
+    mps_formal_polynomial* q);
 
 mps_formal_polynomial* mps_formal_polynomial_mul_eq(mps_formal_polynomial* p,
-    mps_formal_polynomial* g);
+    mps_formal_polynomial* q);
 
 void mps_formal_polynomial_print(mps_formal_polynomial* p);
 
