@@ -421,7 +421,7 @@ static mps_boolean
 
     mps_thread_pool_wait(ctx, ctx->pool);
 
-    mps_delete_obj(data);
+    mps_free(data);
 
     return success;
 }

@@ -60,18 +60,18 @@ mps_monomial_poly*
 
 mps_formal_polynomial*
     mps_formal_polynomial_mul_eq(mps_formal_polynomial* p,
-        mps_formal_polynomial* g)
+        mps_formal_polynomial* q)
 {
     Polynomial* poly = reinterpret_cast<Polynomial*> (p);
-    *poly *= *reinterpret_cast<Polynomial*>(g);
+    *poly *= *reinterpret_cast<Polynomial*>(q);
     return reinterpret_cast<mps_formal_polynomial*> (poly);
 }
 
 mps_formal_polynomial*
     mps_formal_polynomial_mul(mps_formal_polynomial* p,
-        mps_formal_polynomial* g)
+        mps_formal_polynomial* q)
 {
-    Polynomial temp(*reinterpret_cast<Polynomial*>(p) * *reinterpret_cast<Polynomial*>(g));
+    Polynomial temp(*reinterpret_cast<Polynomial*>(p) * *reinterpret_cast<Polynomial*>(q));
     mps_new_obj(Polynomial, poly, sizeof(Polynomial));
     *poly = temp;
     return reinterpret_cast<mps_formal_polynomial*> (poly);

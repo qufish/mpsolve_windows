@@ -1207,6 +1207,7 @@ yyreduce:
         const char* exp = strchr((const char*)yyvsp[0], '^');
         long degree = (exp == NULL) ? 1 : atoi(exp + 1);
         yyval = (mps_formal_polynomial*)mps_formal_monomial_new_with_string("1", degree);
+        mps_free(yyvsp[0]);
     }
     #line 1276 "yacc-parser.tab.cpp"
     break;
@@ -1253,6 +1254,7 @@ yyreduce:
         printf("Floating point coefficient: %s\n", (const char*)yyvsp[0]);
 #endif
         mps_formal_monomial* m = mps_formal_monomial_new_with_string((const char*)yyvsp[0], 0);
+        mps_free(yyvsp[0]);
         yyval = (mps_formal_polynomial*)m;
     }
     #line 1323 "yacc-parser.tab.cpp"

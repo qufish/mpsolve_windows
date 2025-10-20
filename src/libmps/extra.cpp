@@ -76,8 +76,8 @@ bool mps_guarded_lock(mps_mutex_t& target_mutex)
         }
         if (!this_owner) // no one owns it, and I still own the list.  
         {
-            // register myself as the owner so no one else can get this tracked lock
-            // this will "lock" a tracked lock so long as user does not attempt a lock outside of the guard mechanism
+            // register myself as the owner so no one else can get this guarded lock
+            // this will "lock" a guarded lock so long as user does not attempt a lock outside of the guard mechanism
             new_owner = new MUTEX_OWNERSHIP;
             new_owner->next_owner = first_owner;
             first_owner = new_owner;
@@ -126,7 +126,7 @@ bool mps_guarded_unlock(mps_mutex_t& target_mutex)
         {
             if (this_owner->owner_thread_id == sys_thread_id)
             {
-                // I own the tracked mutex, remove myself from the list
+                // I own the guarded mutex, remove myself from the list
                 if (last_owner)
                 {
                     last_owner->next_owner = this_owner->next_owner;

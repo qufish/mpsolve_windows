@@ -218,6 +218,7 @@ mps_cluster_item*
     item->cluster = cluster;
 
     /* The first cluster is the one we're inserting */
+
     clusterization->first_cluster_item = item;
 
     /* The previous item of before was NULL, now should be the cluster that

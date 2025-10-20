@@ -248,6 +248,7 @@ static void on_iteration_logger_destroy(MpsIterationLogger* logger, GdkEvent* ev
 int
     main(int argc, char** argv)
 {
+
 #if HAVE_GRAPHICAL_DEBUGGER
     mps_boolean graphic_debug = false;
 #endif

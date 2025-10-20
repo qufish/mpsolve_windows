@@ -258,7 +258,7 @@ mps_polynomial*
 {
     int i;
     mps_monomial_poly* poly = NULL;
-    char data_type[3];
+    char data_type[4];
     char* token;
     mpf_t ftmp;
     mpq_t qtmp;

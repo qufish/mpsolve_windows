@@ -175,7 +175,6 @@ MPS_PRIVATE void
                 cluster = item->cluster;
             }
 
-
             base_root = mps_cluster_insert_root(ctx, new_cluster, cluster->first_root->k);
             analyzed_roots++;
             mps_cluster_remove_root(ctx, cluster, cluster->first_root);
@@ -482,7 +481,7 @@ void*
 
                     if (first_root == NULL)
                     {
-                        mps_new_obj(mps_root, first_root, sizeof(mps_root));
+                        mps_new_defined_obj(mps_root, first_root, sizeof(mps_root));
                         last_root = first_root;
                         last_root->next_root = first_root->next_root = last_root->prev_root = first_root->prev_root = NULL;
                         last_root->k = i;
