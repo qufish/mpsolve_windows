@@ -50,7 +50,7 @@
 
 /* Read up to (and including) a DELIMITER from FP into *LINEPTR (and
 NUL-terminate it).  *LINEPTR is a pointer returned from mps_malloc(or
-NULL), pointing to *N characters of space.  It is realloc'ed as
+NULL), pointing to *N characters of space.  It is mps_realloc'ed as
 necessary.  Returns the number of characters read (not including
 the null terminator), or -1 on error or EOF.  */
 
@@ -106,7 +106,7 @@ static ssize_t
                 goto unlock_return;
             }
 
-            new_lineptr = (char*)realloc(*lineptr, (int)needed);
+            new_lineptr = (char*)mps_realloc(*lineptr, (int)needed);
             if (new_lineptr == NULL)
             {
                 result = -1;
