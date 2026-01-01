@@ -274,7 +274,7 @@ int yy_buf_size;
 int yy_n_chars;
 
 /* Whether we "own" the buffer - i.e., we know we created it,
-	* and can realloc() it to grow it, and should mps_free() it to
+	* and can mps_realloc() it to grow it, and should mps_free() it to
 	* delete it.
 	*/
 int yy_is_our_buffer;
@@ -1831,7 +1831,7 @@ static void yyensure_buffer_stack(yyscan_t yyscanner)
 
 		/* First allocation is just for 2 elements, since we don't know if this
 			* scanner will even need a stack. We use 2 instead of 1 to avoid an
-			* immediate realloc on the next call.
+			* immediate mps_realloc on the next call.
 			*/
 		num_to_alloc = 1; /* After all that talk, this was set to 1 anyways... */
 		yyg->yy_buffer_stack = (yy_buffer_state**)yyalloc
@@ -2343,7 +2343,7 @@ void* yyrealloc(void* ptr, yy_size_t  size, yyscan_t yyscanner)
 		* any pointer type to void*, and deal with argument conversions
 		* as though doing an assignment.
 		*/
-	return realloc(ptr, (int)size);
+	return mps_realloc(ptr, (int)size);
 }
 
 void yyfree(void* ptr, yyscan_t yyscanner)
