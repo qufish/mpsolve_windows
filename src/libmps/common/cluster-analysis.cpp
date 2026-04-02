@@ -602,8 +602,7 @@ MPS_PRIVATE void
 
     int block_size = 128;
     int block_number = (ctx->n - 1) / block_size + 1;
-    mps_new_array_obj(mps_mutex_t, block_mutexes, sizeof(mps_mutex_t), ctx->n);
-
+    mps_new_array_obj(mps_mutex_t, block_mutexes, sizeof(mps_mutex_t), block_number);
     for (j = 0; j < block_number; j++)
         mps_mutex_init(block_mutexes[j]);
 
@@ -657,7 +656,16 @@ MPS_PRIVATE void
                 data->block_mutex = &block_mutexes[j];
                 data->original_clusters = original_clusters;
                 mps_mutex_guarded_lock(*data->block_mutex);
+
+#ifdef RUN_MCLUSTER_WORKER_DIRECTLY
+                // run directly to avoid odd timing problems in std::mutex
+                _mps_mcluster_worker(data);
+#ifndef MPS_USE_PTHREADS
+                mps_perform_tls_cleanup(false);
+#endif
+#else
                 mps_thread_pool_assign(ctx, ctx->pool, _mps_mcluster_worker, data);
+#endif
             }
 
             mps_thread_yield();

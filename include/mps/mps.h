@@ -50,18 +50,35 @@
 #include <config.h>
 #endif
 
-//#define MPS_USE_PTHREADS // if toggling back to pthreads, will need pthrerads.h and several lib files to be made available
-#ifndef MPS_USE_PTHREADS
+#define NUM_MESSAGING
 
+//#define MPS_USE_PTHREADS // if using pthreads, will need pthreads.h and several lib files to be made available
+#ifndef MPS_USE_PTHREADS
 //  implement threading and mutexes using the Windows std lib methods
+
+/*
+* This define disables the use of threads for the _mps_mcluster_worker method.
+* It is REQUIRED when using std::mutex, which cannot completely simulate the behavior of pthread in some cases (particularly release mode)
+* as it relates to attempts to own a lock that the thread already owns, or release a lock that it does not own.
+* (pthread silently ignores such calls, but it is also doing some thread-yielding that is expensive to duplicate in std::mutex).
+* For small degrees, disabling these worker threads is much faster than allowing them.
+* Also, without the random behavior of threads, the resulting roots (that use this method) will be reproducible.
+* 
+* BUT, note that both the std:mutex AND pthread are currently still failing intermittently in release mode if certain conditions are true, 
+* such as solving a high enough degree of polynomial.  (No failures have been detected in debug mode during Windows testing).
+*/
+#define RUN_MCLUSTER_WORKER_DIRECTLY
+
 #include <condition_variable>
 #include <mutex>
 #include <thread>
 
+void mps_perform_tls_cleanup(bool bLastCleanup);
+
 #define mps_thread_join(threadptr) \
     (*(threadptr)).join(); \
     mps_delete_obj(threadptr)
-#define mps_thread_processing_exit(thread) 
+#define mps_thread_processing_exit(thread) mps_perform_tls_cleanup(false)
 #define mps_thread_t std::thread
 #define mps_start_new_thread(threadptr,method,arg) \
     threadptr = new std::thread(method, arg)
@@ -115,8 +132,19 @@ mps_mutex_lock(mutexvar)
 #define mps_tls_getspecific(key,keyinit) \
 keyinit? &key:NULL
 #define mps_tls_key_create(key,clean_method)
+#define mps_mutex_guarded_lock(mutexvar) mps_guarded_lock(mutexvar)
+#define mps_mutex_guarded_unlock(mutexvar) mps_guarded_unlock(mutexvar)
 
 #else
+//  implement threading and mutexes using the Windows version of the pthread methods
+
+/*
+* This define disables the use of threads for the _mps_mcluster_worker method.
+* It is optional when using pthread.
+* For small degrees, disabling these worker threads is faster than allowing them.
+* Also, without the random behavior of threads, the resulting roots (that use this method) will be reproducible.
+*/
+//#define RUN_MCLUSTER_WORKER_DIRECTLY
 
 //  implement threading and mutexes using unix pthread
 #include <pthread.h>
@@ -154,7 +182,7 @@ keyinit? &key:NULL
     char* ptr; \
     ptr = (char*)calloc(1, 10); /* some weird error with pthread's free in this destroy under debug, but it works if we do this first */\
     free(ptr); \
-    pthread_mutex_destroy(&mutexvar); \
+    pthread_mutex_destroy(&(mutexvar)); \
 }
 #else
 #define mps_mutex_destroy(mutexvar) pthread_mutex_destroy(&mutexvar)
@@ -183,12 +211,11 @@ keyinit? &key:NULL
 #define mps_cond_broadcast(cond,assocmutex) pthread_cond_broadcast(&(cond))
 #define mps_cond_signal(cond,assocmutex) pthread_cond_signal(&(cond))
 #define mps_cond_wait(cond,assocmutex,mutexvar,donecond) pthread_cond_wait(&(cond),&(mutexvar))
-#endif
+#define mps_mutex_guarded_lock(mutexvar) mps_mutex_lock(mutexvar)
+#define mps_mutex_guarded_unlock(mutexvar) mps_mutex_unlock(mutexvar)
+#endif   // end of pthreads defines
 
-// this is the same for both mutex handlers
-#define mps_mutex_guarded_lock(mutexvar) mps_guarded_lock(mutexvar)
-#define mps_mutex_guarded_unlock(mutexvar) mps_guarded_unlock(mutexvar)
-
+/*  To isolate the program from a few declarations found in unix systems */
 #include <mps_unistd.h> 
 
 /* This header should be included first since it contains all the forward
@@ -263,11 +290,6 @@ MPS_END_DECLS
 #include <mps/private/secular-regeneration.h>
 #endif
 
-static const short MPS_ERRMSG_SIZE = 5000;
-void mps_fatal_exit(char* errmsg);
-bool mps_guarded_lock(mps_mutex_t& target_mutex);
-bool mps_guarded_unlock(mps_mutex_t& target_mutex);
-
 #define mps_new_obj(objname,varname,varsize) \
 objname * varname = new objname
 
@@ -292,5 +314,15 @@ objname = NULL
 #define mps_malloc(size) malloc(size)
 #define mps_realloc(ptr, size) realloc(ptr, size);
 #define mps_free(ptr) free(ptr)
+
+static const short MPS_ERRMSG_SIZE = 5000;
+void mps_fatal_exit(char* errmsg);
+#ifndef MPS_USE_PTHREADS
+bool mps_guarded_lock(mps_mutex_t& target_mutex);
+bool mps_guarded_unlock(mps_mutex_t& target_mutex);
+#endif
+int mps_get_thread_id();
+
+extern void issue_state(int id, const char* caller_msg = NULL);
 
 #endif                          /* endef MPSCORE_H */

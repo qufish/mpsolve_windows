@@ -24,12 +24,13 @@ struct mps_tls {
 
 #ifndef MPS_USE_PTHREADS
 static mps_mutex_t tls_mutex;
-static bool tls_mutex_init = false;
+
 struct TLS_CLEANUP
 {
     struct TLS_CLEANUP* next_tls;
     void (*cleanup_method)(void*);
     void* tls_data;
+    int thread_id;
 } *first_tls_cleanup;
 #endif
 
@@ -39,32 +40,10 @@ mps_static_initialized_once(once_key_created, PTHREAD_ONCE_INIT);
 mps_static_tls_struct_init(key_init);
 mps_tls_struct(key);
 
-static void
-    mps_mpc_cache_cleanup(void* pointer)
-{
-    mps_tls* tls = (mps_tls*)pointer;
-    int i;
-
-    for (i = 0; i < MPS_MPF_TEMP_SIZE; i++)
-        mpf_clear(tls->data[i]);
-
-    mps_free(tls->data);
-#ifdef MPS_USE_PTHREADS
-    mps_delete_obj(tls);
-#else
-    key_init = false;
-#endif
-}
-
 #ifndef MPS_USE_PTHREADS
 static void
 mps_sched_tls_cleanup(void (*cleanup_method)(void*), void* tls_data)
 {
-    if (!tls_mutex_init)
-    {
-        mps_mutex_init(tls_mutex);
-        tls_mutex_init = true;
-    }
     mps_mutex_lock(tls_mutex);
 
     mps_new_obj(TLS_CLEANUP, new_tls, sizeof(TLS_CLEANUP));
@@ -73,39 +52,70 @@ mps_sched_tls_cleanup(void (*cleanup_method)(void*), void* tls_data)
     first_tls_cleanup = new_tls;
     new_tls->cleanup_method = cleanup_method;
     new_tls->tls_data = tls_data;
+    new_tls->thread_id = mps_get_thread_id();
 
     mps_mutex_unlock(tls_mutex);
-    mps_mutex_destroy(tls_mutex);
-    tls_mutex_init = false;
 }
 #endif
 
-void mps_perform_tls_cleanup()
+static void
+    mps_mpc_cache_cleanup(void* pointer)
 {
 #ifndef MPS_USE_PTHREADS
-    if (!tls_mutex_init)
-    {
-        mps_mutex_init(tls_mutex);
-        tls_mutex_init = true;
-    }
+    mps_tls* tls = (mps_tls*)pointer;
+    int i;
+
+    for (i = 0; i < MPS_MPF_TEMP_SIZE; i++)
+        mpf_clear(tls->data[i]);
+
+    mps_free(tls->data);
+    key_init = false;
+#endif
+}
+
+#ifndef MPS_USE_PTHREADS
+
+void mps_perform_tls_cleanup(bool bLastCleanup)
+{
+    int thread_id;
+    TLS_CLEANUP* this_tls, * last_tls, * next_tls;
+
+    thread_id = mps_get_thread_id();
     mps_mutex_lock(tls_mutex);
 
-    while (first_tls_cleanup)
+    this_tls = first_tls_cleanup;
+    last_tls = NULL;
+    while (this_tls)
     {
-        TLS_CLEANUP* next_tls;
-        next_tls = first_tls_cleanup->next_tls;
+        next_tls = this_tls->next_tls;
+        if (this_tls->thread_id == thread_id)
+        {
+            this_tls->cleanup_method(this_tls->tls_data);
+            mps_delete_obj(this_tls);
+            if (last_tls)
+            {
+                last_tls->next_tls = next_tls;
+            }
+            else
+            {
+                first_tls_cleanup = next_tls;
+            }
+        }
+        else
+        {
+            last_tls = this_tls;
+        }
+        this_tls = next_tls;
+    }
 
-        first_tls_cleanup->cleanup_method(first_tls_cleanup->tls_data);
-
-        mps_delete_obj(first_tls_cleanup);
-        first_tls_cleanup = next_tls;
+    if (bLastCleanup && first_tls_cleanup)
+    {
+        mps_fatal_exit("not all tls memory has been freed\n");
     }
 
     mps_mutex_unlock(tls_mutex);
-    mps_mutex_destroy(tls_mutex);
-    tls_mutex_init = false;
-#endif
 }
+#endif
 
 static void
 create_key_method(void)
@@ -128,8 +138,8 @@ static mps_tls*
     for (i = 0; i < MPS_MPF_TEMP_SIZE; i++)
         mpf_init2(tls->data[i], precision_needed);
 
-    /* in pthreads, Set up a destructor for this data in case the thread exits */
-    /* in std, do nothing because tls is already extant */
+    /* in pthreads, set up a destructor for this data when the thread exits */
+    /* in std, tls is already extant but schedule mps_mpc_cache_cleanup to drop the 'tls' memory when the thread dies */
     mps_tls_setspecific(key, key_init, tls, mps_mpc_cache_cleanup);
 
     return tls;

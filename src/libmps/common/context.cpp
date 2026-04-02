@@ -15,8 +15,6 @@
 #include <mps/mps.h>
 #include <string.h>
 
-extern void mps_perform_tls_cleanup();
-
 long int
     mps_context_get_minimum_precision(mps_context* ctx)
 {
@@ -161,7 +159,9 @@ void
 
     mps_delete_obj(ctx);
 
-    mps_perform_tls_cleanup();
+#ifndef MPS_USE_PTHREADS
+    mps_perform_tls_cleanup(true);
+#endif
 }
 
 void
